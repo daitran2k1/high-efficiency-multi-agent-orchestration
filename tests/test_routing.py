@@ -1,6 +1,6 @@
-from types import SimpleNamespace
+import pytest
 
-from app.routing import decide_route, normalize_route
+from app.routing import VALID_ROUTES, decide_route, normalize_route
 
 
 def test_normalize_route_handles_supported_labels():
@@ -9,38 +9,26 @@ def test_normalize_route_handles_supported_labels():
     assert normalize_route("support concierge") == "support_concierge"
 
 
-def test_decide_route_returns_model_selected_route():
-    class RecordingModel:
-        def __init__(self):
-            self.messages = None
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    ("prompt", "expected_route"),
+    [
+        (
+            "What is the OAuth token expiry and latency requirement for internal services?",
+            "technical_specialist",
+        ),
+        (
+            "Can Tier 1 accounts process cryptocurrency-related transactions?",
+            "compliance_auditor",
+        ),
+        (
+            "Explain the account opening process for a new retail customer in simple steps.",
+            "support_concierge",
+        ),
+    ],
+)
+def test_decide_route_calls_real_endpoint(real_model, prompt, expected_route):
+    route_name = decide_route(prompt, real_model)
 
-        def invoke(self, messages):
-            self.messages = messages
-            return SimpleNamespace(content="technical_specialist")
-
-    model = RecordingModel()
-    route_name = decide_route("Which expert should handle this?", model)
-
-    assert route_name == "technical_specialist"
-    assert model.messages is not None
-    assert model.messages[-1].content.endswith("Which expert should handle this?")
-
-
-def test_decide_route_normalizes_non_canonical_model_output():
-    class StubModel:
-        def invoke(self, _messages):
-            return SimpleNamespace(content="The best route is Compliance Auditor")
-
-    route_name = decide_route("Can Tier 1 accounts use crypto?", StubModel())
-
-    assert route_name == "compliance_auditor"
-
-
-def test_decide_route_handles_list_based_model_content():
-    class StubModel:
-        def invoke(self, _messages):
-            return SimpleNamespace(content=[{"text": "support_concierge"}])
-
-    route_name = decide_route("Explain the onboarding process simply.", StubModel())
-
-    assert route_name == "support_concierge"
+    assert route_name in VALID_ROUTES
+    assert route_name == expected_route

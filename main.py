@@ -57,7 +57,9 @@ async def healthcheck():
     return {
         "status": "ok",
         "app_name": settings.app_name,
-        "model_provider": settings.model_provider,
+        "model_name": settings.model_name,
+        "api_base_url": settings.api_base_url,
+        "endpoint_ready": settings.endpoint_ready,
         "manual_path": settings.manual_path,
         "manual_sha256": manual_metadata["sha256"],
         "manual_characters": manual_metadata["characters"],

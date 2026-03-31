@@ -1,5 +1,4 @@
 from langchain_core.messages import AIMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 
 from app.config import settings
@@ -15,33 +14,17 @@ MANUAL_CONTENT = load_manual()
 
 def get_model():
     """
-    Returns a Chat instance configured based on environment variables.
-    Supports "custom" (vLLM-style), "openai", or "google".
-
-    NOTE: For the final submission, the "custom" provider should be used
-    to point to the bank's high-efficiency endpoint.
+    Returns a client configured for the assignment's OpenAI-compatible endpoint.
     """
-    provider = settings.model_provider
+    default_headers = {}
+    if settings.api_user_id:
+        default_headers["X-User-Id"] = settings.api_user_id
 
-    if provider == "google":
-        return ChatGoogleGenerativeAI(
-            model=settings.model_name,
-            temperature=0,
-            google_api_key=settings.google_api_key,
-        )
-
-    if provider == "openai":
-        return ChatOpenAI(
-            model=settings.model_name,
-            temperature=0,
-            openai_api_key=settings.openai_api_key,
-        )
-
-    # Fallback/Default for the specific bank endpoint (Assignment requirement)
     return ChatOpenAI(
-        model=settings.model_name or "Qwen/Qwen3-30B-A3B-Instruct-2507",
-        openai_api_base=settings.openai_api_base,
-        openai_api_key=settings.openai_api_key or "dummy-key",
+        model=settings.model_name,
+        base_url=settings.api_base_url,
+        api_key=settings.api_key or "missing-api-key",
+        default_headers=default_headers,
         temperature=0,
     )
 
