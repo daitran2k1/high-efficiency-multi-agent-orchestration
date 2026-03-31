@@ -7,3 +7,4 @@ pydantic
 fastapi
 uvicorn
 pre-commit
+pytest
