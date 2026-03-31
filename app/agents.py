@@ -3,6 +3,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 
 from app.config import settings
+from app.llm_utils import extract_content
 from app.manual_loader import load_manual
 from app.observability import logger, timed_operation
 from app.prompts import ExpertPromptTemplate
@@ -43,26 +44,6 @@ def get_model():
         openai_api_key=settings.openai_api_key or "dummy-key",
         temperature=0,
     )
-
-
-def extract_content(response) -> str:
-    """
-    Robustly extracts text content from various LLM response formats.
-    Handles Gemini's list-of-dicts format.
-    """
-    content = response.content
-    if isinstance(content, str):
-        return content
-    if isinstance(content, list):
-        # Handle list of dicts (common in some Gemini/LangChain versions)
-        text_parts = []
-        for part in content:
-            if isinstance(part, dict) and "text" in part:
-                text_parts.append(part["text"])
-            else:
-                text_parts.append(str(part))
-        return " ".join(text_parts)
-    return str(content)
 
 
 class BaseExpert:
@@ -142,10 +123,6 @@ def router_node(state):
     """
     last_message = state["messages"][-1].content
     with timed_operation("router"):
-        decision = decide_route(last_message, get_model())
-    logger.info(
-        "Routed message to %s using %s classifier",
-        decision.route_name,
-        decision.source,
-    )
-    return {"next_agent": decision.route_name}
+        route_name = decide_route(last_message, get_model())
+    logger.info("Routed message to %s", route_name)
+    return {"next_agent": route_name}
