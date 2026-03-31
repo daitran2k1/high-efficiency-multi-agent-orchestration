@@ -1,16 +1,21 @@
-import os
+from functools import lru_cache
+from hashlib import sha256
+from pathlib import Path
+
+from app.config import settings
 
 
+@lru_cache(maxsize=1)
 def load_manual() -> str:
     """
     Loads the 50-page Internal Operations & Compliance Manual.
     In a real scenario, this would read from a PDF or text file.
     For this assignment, we simulate a ~25,000 token document.
     """
-    manual_path = os.getenv("MANUAL_PATH", "compliance_manual.txt")
+    manual_path = Path(settings.manual_path)
 
-    if os.path.exists(manual_path):
-        with open(manual_path, "r", encoding="utf-8") as f:
+    if manual_path.exists():
+        with manual_path.open("r", encoding="utf-8") as f:
             return f.read()
 
     # Simulation: Generating ~25k tokens of semi-realistic bank compliance text
@@ -34,3 +39,13 @@ def load_manual() -> str:
     # Repeat the content to reach the desired token count simulation
     simulated_manual = base_text * 1  # Currently set to 1 for debugging
     return simulated_manual
+
+
+@lru_cache(maxsize=1)
+def get_manual_metadata() -> dict[str, str | int]:
+    content = load_manual()
+    return {
+        "path": settings.manual_path,
+        "sha256": sha256(content.encode("utf-8")).hexdigest(),
+        "characters": len(content),
+    }
