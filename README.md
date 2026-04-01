@@ -1,6 +1,6 @@
 # Bank Multi-Agent Expert System
 
-This repository implements the take-home assignment in [`GOAL.md`](./GOAL.md): a LangGraph-based multi-agent system for querying a large internal banking operations and compliance manual while preserving prefix-cache efficiency.
+This repository implements a LangGraph-based multi-agent system for querying a large internal banking operations and compliance manual while preserving prefix-cache efficiency.
 
 ## Overview
 
@@ -314,6 +314,7 @@ python scripts/stream_ttft_benchmark.py --full-response
 - I used SQLite for durable thread persistence instead of a LangGraph-native persistent checkpointer because it is simple, reliable, and easy to explain in a take-home setting.
 - The router is a separate small LLM call rather than a rule-based classifier, which keeps the implementation close to the multi-agent assignment but adds one extra network hop.
 - The fallback manual is small by default to speed development, but assignment validation should use a large simulated manual or a real manual file.
+- Long-running conversations would need token-budget management to avoid exceeding the endpoint context window. In a production version, I would preserve the fixed manual prefix, keep recent turns verbatim, and summarize or trim older history before dispatch.
 
 ## Final Notes
 
