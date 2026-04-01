@@ -1,3 +1,5 @@
+from typing import Any
+
 from app.llm_utils import extract_content
 from app.prompts import build_router_messages
 
@@ -21,7 +23,7 @@ def normalize_route(decision_text: str) -> str:
     return "support_concierge"
 
 
-def decide_route(user_message: str, model) -> str:
+def decide_route(user_message: str, model: Any) -> str:
     response = model.invoke(build_router_messages(user_message))
     content = extract_content(response)
     return normalize_route(content)

@@ -1,4 +1,5 @@
-from langgraph.checkpoint.memory import MemorySaver
+from typing import Any
+
 from langgraph.graph import END, StateGraph
 
 from app.agents import (
@@ -10,13 +11,11 @@ from app.agents import (
 from app.state import AgentState
 
 
-def create_workflow():
+def create_workflow() -> Any:
     """
-    Creates and compiles the LangGraph state machine with persistence.
+    Creates and compiles the LangGraph state machine.
+    Durable conversation persistence is handled separately in SQLite.
     """
-    # Initialize MemorySaver for state persistence across turns
-    memory = MemorySaver()
-
     workflow = StateGraph(AgentState)
 
     # 1. Add nodes for each expert and the router
@@ -44,5 +43,4 @@ def create_workflow():
     workflow.add_edge("compliance_auditor", END)
     workflow.add_edge("support_concierge", END)
 
-    # Compile with checkpointer for persistence
-    return workflow.compile(checkpointer=memory)
+    return workflow.compile()

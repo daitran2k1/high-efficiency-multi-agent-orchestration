@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -25,6 +26,13 @@ class Settings:
     api_key: str | None = os.getenv("API_KEY")
     api_user_id: str | None = os.getenv("API_USER_ID")
     manual_path: str = os.getenv("MANUAL_PATH", "compliance_manual.txt").strip()
+    simulate_large_manual: bool = os.getenv("SIMULATE_LARGE_MANUAL", "0").strip() == "1"
+    simulated_manual_repeat_count: int = int(
+        os.getenv("SIMULATED_MANUAL_REPEAT_COUNT", "80").strip()
+    )
+    state_db_path: str = os.getenv(
+        "STATE_DB_PATH", str(Path("data") / "conversation_state.db")
+    ).strip()
     log_level: str = os.getenv("LOG_LEVEL", "INFO").strip().upper()
 
     @property

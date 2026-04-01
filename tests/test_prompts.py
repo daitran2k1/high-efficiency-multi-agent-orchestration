@@ -23,7 +23,8 @@ def test_expert_prompt_keeps_manual_as_first_message():
     assert messages[2].content == "Can Tier 1 accounts use crypto?"
 
 
-@pytest.mark.integration
+@pytest.mark.endpoint
+@pytest.mark.usefixtures("real_model")
 @pytest.mark.parametrize(
     ("expert", "user_message", "expected_substring"),
     [
@@ -44,9 +45,7 @@ def test_expert_prompt_keeps_manual_as_first_message():
         ),
     ],
 )
-def test_expert_agents_call_real_endpoint(
-    real_model, expert, user_message, expected_substring
-):
+def test_expert_agents_call_real_endpoint(expert, user_message, expected_substring):
     result = expert({"messages": [HumanMessage(content=user_message)]})
     response_text = result["messages"][-1].content.lower()
 

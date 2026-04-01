@@ -9,7 +9,7 @@ def test_normalize_route_handles_supported_labels():
     assert normalize_route("support concierge") == "support_concierge"
 
 
-@pytest.mark.integration
+@pytest.mark.endpoint
 @pytest.mark.parametrize(
     ("prompt", "expected_route"),
     [

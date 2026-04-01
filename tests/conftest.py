@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -13,12 +14,14 @@ from app.config import settings
 def pytest_configure(config):
     config.addinivalue_line(
         "markers",
-        "integration: calls the assignment's real model endpoint",
+        "endpoint: calls the assignment's real model endpoint",
     )
 
 
 @pytest.fixture(scope="session")
 def real_model():
+    if os.getenv("RUN_ENDPOINT_TESTS", "0").strip() != "1":
+        pytest.skip("Endpoint tests are disabled. Set RUN_ENDPOINT_TESTS=1 to enable.")
     if not settings.endpoint_ready:
         pytest.skip("Assignment endpoint is not configured in .env")
 

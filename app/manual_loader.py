@@ -4,22 +4,7 @@ from pathlib import Path
 
 from app.config import settings
 
-
-@lru_cache(maxsize=1)
-def load_manual() -> str:
-    """
-    Loads the 50-page Internal Operations & Compliance Manual.
-    In a real scenario, this would read from a PDF or text file.
-    For this assignment, we simulate a ~25,000 token document.
-    """
-    manual_path = Path(settings.manual_path)
-
-    if manual_path.exists():
-        with manual_path.open("r", encoding="utf-8") as f:
-            return f.read()
-
-    # Simulation: Generating ~25k tokens of semi-realistic bank compliance text
-    base_text = """
+BASE_MANUAL_TEXT = """
 [SECTION 1: CORE BANKING OPERATIONS]
 1.1 Account Opening Procedures: All new accounts must undergo KYC (Know Your Customer) verification.
 1.2 Transaction Limits: Standard retail accounts are capped at $10,000 per day for external transfers.
@@ -34,11 +19,31 @@ def load_manual() -> str:
 3.1 System Latency: All internal microservices must respond within 200ms.
 3.2 Error Codes: ERR_AUTH_01 (Unauthorized), ERR_BAL_02 (Insufficient Funds).
 3.3 Deployment: Blue-green deployment is mandatory for all production-facing compliance tools.
+""".strip()
 
-"""
-    # Repeat the content to reach the desired token count simulation
-    simulated_manual = base_text * 1  # Currently set to 1 for debugging
-    return simulated_manual
+
+def build_simulated_manual() -> str:
+    if settings.simulate_large_manual:
+        return "\n\n".join(
+            [BASE_MANUAL_TEXT] * max(settings.simulated_manual_repeat_count, 1)
+        )
+    return BASE_MANUAL_TEXT
+
+
+@lru_cache(maxsize=1)
+def load_manual() -> str:
+    """
+    Loads the 50-page Internal Operations & Compliance Manual.
+    In a real scenario, this would read from a PDF or text file.
+    For this assignment, we simulate a ~25,000 token document.
+    """
+    manual_path = Path(settings.manual_path)
+
+    if manual_path.exists():
+        with manual_path.open("r", encoding="utf-8") as f:
+            return f.read()
+
+    return build_simulated_manual()
 
 
 @lru_cache(maxsize=1)
@@ -48,4 +53,5 @@ def get_manual_metadata() -> dict[str, str | int]:
         "path": settings.manual_path,
         "sha256": sha256(content.encode("utf-8")).hexdigest(),
         "characters": len(content),
+        "simulate_large_manual": settings.simulate_large_manual,
     }

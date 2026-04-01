@@ -1,10 +1,15 @@
 from dataclasses import dataclass
+from typing import Sequence
 
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
 ROUTER_SYSTEM_PROMPT = (
     "You classify banking manual questions into exactly one route.\n"
-    "Return only one label: technical_specialist, compliance_auditor, support_concierge."
+    "Return only one label: technical_specialist, compliance_auditor, support_concierge.\n\n"
+    "Route definitions:\n"
+    "- technical_specialist: system specifications, API limits, integrations, errors, troubleshooting, infrastructure.\n"
+    "- compliance_auditor: regulations, policy boundaries, can/cannot decisions, restrictions, risk and compliance rules.\n"
+    "- support_concierge: step-by-step guidance, operational walkthroughs, simplified explanations for non-technical staff."
 )
 
 
@@ -14,7 +19,9 @@ class ExpertPromptTemplate:
     route_name: str
     specific_instructions: str
 
-    def build_messages(self, manual_content: str, conversation_messages):
+    def build_messages(
+        self, manual_content: str, conversation_messages: Sequence[BaseMessage]
+    ) -> list[BaseMessage]:
         return [
             SystemMessage(
                 content=f"BANK OPERATIONS & COMPLIANCE MANUAL:\n\n{manual_content}"
@@ -31,7 +38,7 @@ class ExpertPromptTemplate:
         ]
 
 
-def build_router_messages(user_message: str):
+def build_router_messages(user_message: str) -> list[BaseMessage]:
     return [
         SystemMessage(content=ROUTER_SYSTEM_PROMPT),
         HumanMessage(

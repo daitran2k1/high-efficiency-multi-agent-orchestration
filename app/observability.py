@@ -1,5 +1,6 @@
 import logging
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
 
 from app.config import settings
@@ -16,7 +17,7 @@ logger = logging.getLogger("bank_agent_orchestrator")
 
 
 @contextmanager
-def timed_operation(operation_name: str):
+def timed_operation(operation_name: str) -> Iterator[None]:
     started_at = time.perf_counter()
     try:
         yield
