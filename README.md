@@ -6,7 +6,7 @@ This repository implements a LangGraph-based multi-agent system for querying a l
 
 The system contains:
 
-- a lightweight router
+- a lightweight LLM-based router
 - three expert agents:
   - Technical Specialist
   - Compliance Auditor
@@ -48,12 +48,15 @@ The architecture is designed around one core constraint from the assignment: the
 ### High Cache Hit Rate
 
 The prompt is intentionally structured so the large manual is always the first system message for every expert call.
+This design assumes a prefix-caching backend (for example LMCache-compatible serving), where identical token prefixes allow KV cache reuse across requests.
 
 That means the shared prefix is:
 
 1. identical manual content
 2. identical placement in the message list
 3. identical role ordering before any user-specific content appears
+
+Even minor changes in whitespace, formatting, or ordering within the manual prefix would break cache reuse, so the prefix is constructed once and reused verbatim across all agents.
 
 The expert-specific instructions come after the manual. This matters because if the role prompt were placed before the manual, each expert would create a different early-token prefix and reduce cache reuse across agent switches.
 
@@ -184,8 +187,9 @@ Larger simulated manual:
 Interpretation:
 
 - The streaming benchmark measures application-observed TTFT, not raw serving-engine TTFT.
-- The later expert calls on the larger shared prefix remained competitive even with a much larger prompt, which is consistent with cache reuse reducing repeated prefill cost.
+- Despite a significantly larger prompt, later expert calls maintained similar observed TTFT, which is consistent with prefix cache reuse reducing repeated prefill work.
 - The support concierge response still had the longest total duration because it produced the longest answer, which affects decode time even when the prompt prefix is reused.
+- Cache reuse primarily reduces prefill latency, while decode latency remains dependent on response length.
 
 ## State Management
 
