@@ -140,7 +140,7 @@ I ran both benchmark scripts in two modes:
 - small fallback manual
 - larger simulated manual that still fit within the provided endpoint's context window
 
-I initially tried a larger simulation that exceeded the model context limit and received a `400` error indicating a negative `max_tokens` budget. Because of that, the reported "large" run below reflects the largest successful simulated-prefix configuration rather than an arbitrarily repeated manual size.
+For the larger simulated run, I used `SIMULATED_MANUAL_REPEAT_COUNT=20`. Higher repeat counts exceeded the provided endpoint context window during testing and returned a `400` error indicating a negative `max_tokens` budget.
 
 ### Non-Streaming Cache Benchmark
 
